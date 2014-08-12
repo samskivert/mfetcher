@@ -8,4 +8,20 @@ front and thus tends to handle any errors by blowing everything up. This library
 in situations where developers will be editing Maven dependencies and may make mistakes, and thus it
 provides better failure handling for unresolvable dependencies.
 
+## Usage
+
+Like so:
+
+```java
+Path home = Paths.get(System.getProperty("user.home"));
+Path m2 = home.resolve(".m2/repository");
+DependencyManager mgr = new DependencyManager(m2, null, false, false);
+mgr.resolveDependencies(Arrays.asList(
+  new Coord("junit", "junit", "4.11", "jar")));
+```
+
+Et voila!
+
+Set `-Dmfetcher.log=verbose` to see all the messy details and/or debug failures.
+
 [Capsule]: https://github.com/puniverse/capsule
