@@ -16,7 +16,7 @@ Like so:
 Path home = Paths.get(System.getProperty("user.home"));
 Path m2 = home.resolve(".m2/repository");
 DependencyManager mgr = new DependencyManager(m2, null, false, false);
-mgr.resolveDependencies(Arrays.asList(
+Map<Coord,Path> results = mgr.resolveDependencies(Arrays.asList(
   new Coord("junit", "junit", "4.11", "jar")));
 ```
 
