@@ -44,8 +44,8 @@ public class MavenSettings {
             mhome.resolve("conf").resolve("settings.xml").toFile());
         request.setSystemProperties(getSystemProperties());
 
-        System.out.println("Maven home " + mhome);
-        System.out.println("Settings " + LOCAL_M2.resolve("settings.xml"));
+        // System.out.println("Maven home " + mhome);
+        // System.out.println("Settings " + LOCAL_M2.resolve("settings.xml"));
 
         try {
             settings = new DefaultSettingsBuilderFactory().newInstance().build(request).
@@ -56,7 +56,7 @@ public class MavenSettings {
             settings.setServers(result.getServers());
             settings.setProxies(result.getProxies());
 
-            System.out.println("SETTINGS: " + settings);
+            // System.out.println("SETTINGS: " + settings);
         } catch (SettingsBuildingException e) {
             throw new RuntimeException(e);
         }
