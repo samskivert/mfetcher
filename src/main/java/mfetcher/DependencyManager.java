@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositoryEvent;
@@ -49,14 +50,16 @@ public class DependencyManager {
     private final boolean forceRefresh;
     private final boolean offline;
     private final RepositorySystem system;
+    private final MavenSettings settings;
     private final RepositorySystemSession session;
     private final List<RemoteRepository> repos;
 
     public DependencyManager (Path localRepoPath, List<String> repos,
                               boolean forceRefresh, boolean offline) {
-        this.system = newRepositorySystem();
         this.forceRefresh = forceRefresh;
         this.offline = offline;
+        this.system = newRepositorySystem();
+        this.settings = new MavenSettings();
         this.session = newRepositorySession(system, localRepoPath);
 
         final RepositoryPolicy policy = new RepositoryPolicy(
@@ -108,7 +111,7 @@ public class DependencyManager {
         if (verbose) System.out.println(method + " :: " + event);
     }
 
-    private static RepositorySystem newRepositorySystem() {
+    private static RepositorySystem newRepositorySystem () {
         // We're using DefaultServiceLocator rather than Guice/Sisu because it's lighter weight.
         // This method pulls together the necessary Aether components and plugins.
         final DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
@@ -136,7 +139,7 @@ public class DependencyManager {
         return locator.getService(RepositorySystem.class);
     }
 
-    private RepositorySystemSession newRepositorySession(
+    private RepositorySystemSession newRepositorySession (
         RepositorySystem system, Path localRepoPath) {
         final DefaultRepositorySystemSession s = MavenRepositorySystemUtils.newSession();
         final LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
@@ -152,6 +155,9 @@ public class DependencyManager {
             RepositoryPolicy.UPDATE_POLICY_NEVER);
 
         s.setLocalRepositoryManager(system.newLocalRepositoryManager(s, localRepo));
+        s.setProxySelector(settings.getProxySelector());
+        s.setMirrorSelector(settings.getMirrorSelector());
+        s.setAuthenticationSelector(settings.getAuthSelector());
 
         s.setTransferListener((TransferListener)Proxy.newProxyInstance(
             getClass().getClassLoader(),
@@ -175,7 +181,7 @@ public class DependencyManager {
         return s;
     }
 
-    private static RemoteRepository newRemoteRepository(
+    private static RemoteRepository newRemoteRepository (
         String name, String url, RepositoryPolicy policy) {
         return new RemoteRepository.Builder(name, "default", url).setPolicy(policy).build();
     }
@@ -190,18 +196,18 @@ public class DependencyManager {
                                    coord.version);
     }
 
-    private static Dependency toDependency(Coord coord) {
+    private static Dependency toDependency (Coord coord) {
         return new Dependency(toArtifact(coord), JavaScopes.RUNTIME, false,
                               getExclusions(coord.exclusions));
     }
 
-    private static List<Dependency> toDependencies(List<Coord> coords) {
+    private static List<Dependency> toDependencies (List<Coord> coords) {
         final List<Dependency> deps = new ArrayList<Dependency>(coords.size());
         for (Coord c : coords) deps.add(toDependency(c));
         return deps;
     }
 
-    static List<Exclusion> getExclusions(String excls) {
+    private static List<Exclusion> getExclusions (String excls) {
         if (excls == null) return null;
         final List<String> exclusionPatterns = Arrays.asList(excls.split(","));
         final List<Exclusion> exclusions = new ArrayList<Exclusion>();
