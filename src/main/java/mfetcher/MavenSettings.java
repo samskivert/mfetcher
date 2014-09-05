@@ -35,6 +35,7 @@ import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 public class MavenSettings {
 
     public final Settings settings;
+    public final ProxySelector proxySelector;
 
     public MavenSettings () {
         DefaultSettingsBuildingRequest request = new DefaultSettingsBuildingRequest();
@@ -55,24 +56,12 @@ public class MavenSettings {
                 new DefaultSettingsDecryptionRequest(settings));
             settings.setServers(result.getServers());
             settings.setProxies(result.getProxies());
+            proxySelector = getProxySelector();
 
             // System.out.println("SETTINGS: " + settings);
         } catch (SettingsBuildingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public ProxySelector getProxySelector () {
-        DefaultProxySelector selector = new DefaultProxySelector();
-        for (Proxy proxy : settings.getProxies()) {
-            AuthenticationBuilder auth = new AuthenticationBuilder();
-            auth.addUsername(proxy.getUsername()).addPassword(proxy.getPassword());
-            selector.add(new org.eclipse.aether.repository.Proxy(proxy.getProtocol(),
-                                                                 proxy.getHost(), proxy.getPort(),
-                                                                 auth.build()),
-                         proxy.getNonProxyHosts());
-        }
-        return selector;
     }
 
     public MirrorSelector getMirrorSelector () {
@@ -92,6 +81,19 @@ public class MavenSettings {
             selector.add(server.getId(), auth.build());
         }
         return new ConservativeAuthenticationSelector(selector);
+    }
+
+    private ProxySelector getProxySelector () {
+        DefaultProxySelector selector = new DefaultProxySelector();
+        for (Proxy proxy : settings.getProxies()) {
+            AuthenticationBuilder auth = new AuthenticationBuilder();
+            auth.addUsername(proxy.getUsername()).addPassword(proxy.getPassword());
+            selector.add(new org.eclipse.aether.repository.Proxy(proxy.getProtocol(),
+                                                                 proxy.getHost(), proxy.getPort(),
+                                                                 auth.build()),
+                         proxy.getNonProxyHosts());
+        }
+        return selector;
     }
 
     private static DefaultSettingsDecrypter newDefaultSettingsDecrypter () {

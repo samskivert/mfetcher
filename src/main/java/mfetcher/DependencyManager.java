@@ -2,7 +2,6 @@ package mfetcher;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +24,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.impl.DefaultServiceLocator;
 import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactResult;
@@ -155,11 +155,11 @@ public class DependencyManager {
             RepositoryPolicy.UPDATE_POLICY_NEVER);
 
         s.setLocalRepositoryManager(system.newLocalRepositoryManager(s, localRepo));
-        s.setProxySelector(settings.getProxySelector());
+        s.setProxySelector(settings.proxySelector);
         s.setMirrorSelector(settings.getMirrorSelector());
         s.setAuthenticationSelector(settings.getAuthSelector());
 
-        s.setTransferListener((TransferListener)Proxy.newProxyInstance(
+        s.setTransferListener((TransferListener)java.lang.reflect.Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class<?>[] { TransferListener.class },
             new InvocationHandler() {
@@ -168,7 +168,7 @@ public class DependencyManager {
                     return null;
                 }
             }));
-        s.setRepositoryListener((RepositoryListener)Proxy.newProxyInstance(
+        s.setRepositoryListener((RepositoryListener)java.lang.reflect.Proxy.newProxyInstance(
             getClass().getClassLoader(),
             new Class<?>[] { RepositoryListener.class },
             new InvocationHandler() {
@@ -181,9 +181,15 @@ public class DependencyManager {
         return s;
     }
 
-    private static RemoteRepository newRemoteRepository (
+    private RemoteRepository newRemoteRepository (
         String name, String url, RepositoryPolicy policy) {
-        return new RemoteRepository.Builder(name, "default", url).setPolicy(policy).build();
+        // this is absurb, but there's no way to use ProxySelector to select a proxy without already
+        // *having* a RemoteRepository, but we can't set a Proxy on a RemoteRepository after the
+        // fact, we can only set it when *building* a RemoteRepository; so we have to build one
+        // without the proxy, use it to select a proxy and then build a new one; go Maven!
+        RemoteRepository scratch = new RemoteRepository.Builder(name, "default", url).build();
+        Proxy proxy = settings.proxySelector.getProxy(scratch);
+        return new RemoteRepository.Builder(name, "default", url).setProxy(proxy).setPolicy(policy).build();
     }
 
     private static Coord toCoord (Artifact art) {
