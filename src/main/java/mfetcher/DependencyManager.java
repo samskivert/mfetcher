@@ -183,7 +183,7 @@ public class DependencyManager {
 
     private RemoteRepository newRemoteRepository (
         String name, String url, RepositoryPolicy policy) {
-        // this is absurb, but there's no way to use ProxySelector to select a proxy without already
+        // this is absurd, but there's no way to use ProxySelector to select a proxy without already
         // *having* a RemoteRepository, but we can't set a Proxy on a RemoteRepository after the
         // fact, we can only set it when *building* a RemoteRepository; so we have to build one
         // without the proxy, use it to select a proxy and then build a new one; go Maven!
