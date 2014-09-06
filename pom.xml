@@ -10,7 +10,7 @@
   <groupId>com.samskivert</groupId>
   <artifactId>mfetcher</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.3</version>
+  <version>1.0.4-SNAPSHOT</version>
 
   <name>Maven Fetcher</name>
   <description>A simple API for fetching artifacts from Maven repositories.</description>
