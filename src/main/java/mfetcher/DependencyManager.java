@@ -193,8 +193,10 @@ public class DependencyManager {
     }
 
     private static Coord toCoord (Artifact art) {
-        return new Coord(art.getGroupId(), art.getArtifactId(),
-                         art.getVersion(), art.getExtension());
+      Coord coord = new Coord(art.getGroupId(), art.getArtifactId(),
+                              art.getVersion(), art.getExtension());
+      coord.classifier = art.getClassifier();
+      return coord;
     }
 
     private static Artifact toArtifact (Coord coord) {
