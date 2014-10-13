@@ -195,7 +195,8 @@ public class DependencyManager {
     private static Coord toCoord (Artifact art) {
       Coord coord = new Coord(art.getGroupId(), art.getArtifactId(),
                               art.getVersion(), art.getExtension());
-      coord.classifier = art.getClassifier();
+      String cl = art.getClassifier();
+      if (cl != null && cl.length() > 0) coord.classifier = cl;
       return coord;
     }
 

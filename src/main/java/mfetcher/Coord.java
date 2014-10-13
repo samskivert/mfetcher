@@ -1,5 +1,7 @@
 package mfetcher;
 
+import java.util.Objects;
+
 public class Coord {
 
     public final String groupId;
@@ -19,17 +21,21 @@ public class Coord {
     }
 
     @Override public String toString () {
-        return groupId + ":" + artifactId + ":" + version + ":" + kind;
+        return groupId + ":" + artifactId + ":" + version + ":" + kind +
+            (classifier == null ? "" : (":" + classifier));
     }
 
     @Override public int hashCode () {
-        return groupId.hashCode() ^ artifactId.hashCode() ^ version.hashCode() ^ kind.hashCode();
+      return groupId.hashCode() ^ artifactId.hashCode() ^ version.hashCode() ^ kind.hashCode() ^
+          (classifier == null ? 0 : classifier.hashCode());
     }
 
     @Override public boolean equals (Object other) {
         if (!(other instanceof Coord)) return false;
         Coord oc = (Coord)other;
         return oc.groupId.equals(groupId) && oc.artifactId.equals(artifactId) &&
-            oc.version.equals(version) && oc.kind.equals(kind);
+            oc.version.equals(version) && oc.kind.equals(kind) &&
+            Objects.equals(oc.classifier, classifier) &&
+            Objects.equals(oc.exclusions, exclusions);
     }
 }
