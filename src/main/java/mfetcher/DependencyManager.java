@@ -83,8 +83,7 @@ public class DependencyManager {
      * dependencies were returned from Maven.
      */
     public Map<Coord,Path> resolveDependencies (List<Coord> coords) {
-        CollectRequest req = new CollectRequest().setRepositories(repos).
-            setDependencies(toDependencies(coords));
+        CollectRequest req = new CollectRequest((Dependency)null, toDependencies(coords), repos);
 
         DependencyResult result;
         try {
@@ -96,6 +95,9 @@ public class DependencyManager {
         List<ArtifactResult> artifactResults = result.getArtifactResults();
         Map<Coord,Path> jars = new LinkedHashMap<Coord,Path>();
         for (ArtifactResult artifactResult : artifactResults) {
+            // if this artifact result is a conflict loser, omit it
+            if (artifactResult.getRequest().getDependencyNode().getData().get(
+                ConflictResolver.NODE_DATA_WINNER) != null) continue;
             Artifact art = artifactResult.getArtifact();
             if (art == null) jars.put(toCoord(artifactResult.getRequest().getArtifact()), null);
             else jars.put(toCoord(art), art.getFile().toPath().toAbsolutePath());

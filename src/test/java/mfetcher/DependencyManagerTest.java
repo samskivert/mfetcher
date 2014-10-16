@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.aether.RepositoryEvent;
@@ -52,5 +53,18 @@ public class DependencyManagerTest {
         assertNotNull(paths.get(JUNIT));
         assertNull(paths.get(HTMLP)); // missing
         assertNotNull(paths.get(ASM5));
+    }
+
+    @Test
+    public void testConflict () {
+        DependencyManager dmgr = new DependencyManager(m2, null, false, false);
+        Map<Coord,Path> paths = dmgr.resolveDependencies(Arrays.asList(
+            new Coord("com.threerings", "ooo-app", "1.0.1", "jar")));
+        Map<String,Coord> ids = new HashMap<String,Coord>();
+        for (Coord coord : paths.keySet()) {
+          String id = coord.groupId + ":" + coord.artifactId;
+          Coord exist = ids.put(id, coord);
+          assertNull(coord + " duplicates " + exist, exist);
+        }
     }
 }
