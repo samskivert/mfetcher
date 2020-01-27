@@ -38,7 +38,7 @@ import org.eclipse.aether.util.graph.transformer.ConflictResolver;
 
 public class DependencyManager {
 
-    private static final String MAVEN_CENTRAL_URL = "http://central.maven.org/maven2/";
+    private static final String MAVEN_CENTRAL_URL = "https://repo1.maven.org/maven2/";
     private static final String PROP_CONNECT_TIMEOUT = "mfetcher.connect.timeout";
     private static final String PROP_REQUEST_TIMEOUT = "mfetcher.request.timeout";
     private static final String PROP_LOG = "mfetcher.log";
